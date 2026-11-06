@@ -1,0 +1,29 @@
+name: matching_cards
+description: A Cards Against Humanity style party game for your local network, on phones, desktops and in the browser.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  matching_cards_core:
+    path: packages/matching_cards_core
+  web_socket_channel: ^3.0.3
+  qr_flutter: ^4.1.0
+  shared_preferences: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/decks/
+    # <web_client>
+    - assets/web_client/
+    # </web_client>

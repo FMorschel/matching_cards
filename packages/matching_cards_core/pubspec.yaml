@@ -1,0 +1,11 @@
+name: matching_cards_core
+description: Rules, wire protocol and LAN server for the Matching Cards party game. Pure Dart, no Flutter.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0
