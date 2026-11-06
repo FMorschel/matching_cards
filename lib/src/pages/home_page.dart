@@ -8,6 +8,10 @@ import '../storage.dart';
 import 'game_page.dart';
 import 'join_page.dart';
 
+/// Set with `--dart-define=STATIC_HOSTING=true` for builds served from a plain
+/// web host, where no game server answers on the page's own address.
+const bool _staticHosting = bool.fromEnvironment('STATIC_HOSTING');
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -22,7 +26,8 @@ class _HomePageState extends State<HomePage> {
 
   /// When the web client is served by a host, that host is right here.
   Uri? get _sameOrigin {
-    if (!kIsWeb) return null;
+    // A static copy (GitHub Pages) has no game on its own address.
+    if (!kIsWeb || _staticHosting) return null;
     final base = Uri.base;
     if (!base.scheme.startsWith('http') || base.host.isEmpty) return null;
     final secure = base.scheme == 'https';

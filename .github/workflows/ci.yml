@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: Core package (Dart)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/matching_cards_core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - run: dart format --output=none --set-exit-if-changed .
+        continue-on-error: true # report formatting, do not block
+      - run: dart analyze
+      - run: dart test
+
+  app:
+    name: App (Flutter)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      # Platform folders are not committed; generate what the checks need.
+      - run: flutter create --platforms=web,linux .
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+  pages:
+    name: Build web and publish to GitHub Pages
+    needs: [core, app]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter create --platforms=web .
+      - run: flutter pub get
+      - name: Build
+        run: >
+          flutter build web --release
+          --base-href "/${{ github.event.repository.name }}/"
+          --dart-define=STATIC_HOSTING=true
+      - run: touch build/web/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+      - id: deployment
+        uses: actions/deploy-pages@v4
